@@ -105,13 +105,29 @@ echo -e "${GREEN}🔹 Google Map :${RESET} https://www.google.com/maps?q=$loc"
 
 # Country flag
 country_code=$(echo $data | jq -r '.country')
+
 if [ -n "$country_code" ]; then
+  # প্রথম ও দ্বিতীয় অক্ষর বের করা
   first_char=$(printf "%d" "'${country_code:0:1}")
   second_char=$(printf "%d" "'${country_code:1:1}")
-  printf -v flag "\\U%X\\U%X" $((0x1F1E6 + first_char - 65)) $((0x1F1E6 + second_char - 65))
+
+  # Unicode কোড পয়েন্ট হিসাব করা
+  first_unicode=$((0x1F1E6 + first_char - 65))
+  second_unicode=$((0x1F1E6 + second_char - 65))
+
+  # Termux-এ safeভাবে flag তৈরি করা
+  flag=$(echo -e "\U$(printf '%X' $first_unicode)\U$(printf '%X' $second_unicode)")
+
+  # যদি Unicode display না হয়, fallback হিসেবে country code দেখাবে
+  if [ -z "$flag" ]; then
+      flag="$country_code"
+  fi
+
   echo -e "${GREEN}🔹 Country Flag :${RESET} $flag"
 fi
+
 
 echo "--------------------------------------"
 echo -e "${CYAN}✨ Created by: $username (https://github.com/weirdnehal)${RESET}"
 echo "======================================"
+
