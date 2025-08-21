@@ -1,9 +1,9 @@
 #!/bin/bash
 # =======================================
-# Author   : weirdnehal
-# GitHub   : https://github.com/weirdnehal
-# Tool     : Termux IP Lookup
-# Version  : 3.0
+# Author  : Khoka Ahmed
+# GitHub  : https://github.com/weirdnehal
+# Tool    : Termux IP Lookup
+# Version : 3.2
 # =======================================
 
 # Colors
@@ -15,9 +15,8 @@ RESET='\033[0m'
 
 clear
 
-# Banner with figlet (install figlet if not installed)
-if ! command -v figlet &> /dev/null
-then
+# Banner using figlet
+if ! type figlet >/dev/null 2>&1; then
     echo -e "${YELLOW}Figlet not found. Installing...${RESET}"
     pkg install figlet -y
 fi
@@ -25,26 +24,27 @@ fi
 figlet -f slant "IP Lookup"
 echo -e "${CYAN}🌐 Termux IP Lookup Tool 🌐${RESET}"
 
-# Personalized Footer
-read -p "Enter your name: " username
+# Hardcoded Author info
+username="Khoka Ahmed"
+github_link="https://github.com/weirdnehal"
 
 echo -e "${GREEN} Author   : $username"
-echo -e " GitHub   : https://github.com/weirdnehal"
-echo -e " Version  : 3.0 ${RESET}"
+echo -e " GitHub   : $github_link"
+echo -e " Version  : 3.2 ${RESET}"
 echo "--------------------------------------"
 
 # Menu
-echo -e "${YELLOW}[1]${RESET} 🔍 My IP Lookup"
+echo -e "${YELLOW}[1]${RESET} 🔍 Lookup My IP"
 echo -e "${YELLOW}[2]${RESET} 🌎 Lookup Other IP"
 echo -e "${YELLOW}[3]${RESET} 📜 View Lookup History"
 echo -e "${YELLOW}[4]${RESET} 🚪 Exit"
 echo "--------------------------------------"
-read -p "👉 Choose an option: " opt
+read -p "Choose an option: " opt
 
 if [ "$opt" == "1" ]; then
     ip=$(curl -s ifconfig.me)
 elif [ "$opt" == "2" ]; then
-    read -p "🔹 Enter IP Address: " ip
+    read -p "Enter IP Address: " ip
     if ! [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         echo -e "${RED}❌ Invalid IP Address!${RESET}"
         exit
@@ -65,7 +65,7 @@ else
     exit
 fi
 
-# Spinner function for loading effect
+# Spinner function
 spinner(){
   local pid=$1
   local delay=0.1
@@ -81,14 +81,15 @@ spinner(){
 }
 
 # Fetch data
-curl -s https://ipinfo.io/$ip/json & spinner $!
-
-data=$(curl -s https://ipinfo.io/$ip/json)
+curl -s https://ipinfo.io/$ip/json > /tmp/ipdata.json &
+pid=$!
+spinner $pid
+data=$(cat /tmp/ipdata.json)
 
 # Save to history
 echo "$(date): $ip" >> history.txt
 
-# Results
+# Display results
 echo -e "${CYAN}"
 echo "========= 📊 Lookup Result 📊 ========="
 echo -e "${RESET}"
@@ -103,31 +104,20 @@ loc=$(echo $data | jq -r '.loc')
 echo -e "${GREEN}🔹 Location   :${RESET} $loc"
 echo -e "${GREEN}🔹 Google Map :${RESET} https://www.google.com/maps?q=$loc"
 
-# Country flag
+# Country flag (Termux-safe)
 country_code=$(echo $data | jq -r '.country')
-
 if [ -n "$country_code" ]; then
-  # প্রথম ও দ্বিতীয় অক্ষর বের করা
   first_char=$(printf "%d" "'${country_code:0:1}")
   second_char=$(printf "%d" "'${country_code:1:1}")
-
-  # Unicode কোড পয়েন্ট হিসাব করা
   first_unicode=$((0x1F1E6 + first_char - 65))
   second_unicode=$((0x1F1E6 + second_char - 65))
-
-  # Termux-এ safeভাবে flag তৈরি করা
   flag=$(echo -e "\U$(printf '%X' $first_unicode)\U$(printf '%X' $second_unicode)")
-
-  # যদি Unicode display না হয়, fallback হিসেবে country code দেখাবে
   if [ -z "$flag" ]; then
       flag="$country_code"
   fi
-
   echo -e "${GREEN}🔹 Country Flag :${RESET} $flag"
 fi
 
-
 echo "--------------------------------------"
-echo -e "${CYAN}✨ Created by: $username (https://github.com/weirdnehal)${RESET}"
+echo -e "${CYAN}✨ Created by: $username ($github_link)${RESET}"
 echo "======================================"
-
