@@ -12,7 +12,7 @@ THIS TOOLS IS FREE. PURCHASE PREMIUM IP LOOKUP TOOLS
     Termux/Kali Linux
 
 ### FEATURES :
-* [+] IP LOOKUP Tools !
+* [+] IP Lookup Tools !
 * [+] Updated maintainence !
 * [+] Easy for beginners !
 * [+] Working weirdnehal tool for termux & kali linux !
